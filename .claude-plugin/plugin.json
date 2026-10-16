@@ -1,0 +1,8 @@
+{
+  "name": "security-auditor",
+  "version": "1.0.0",
+  "description": "Read-only security audit agent for apps and sites you own: leaked secrets, access control, injection, dependencies, config and AI-feature risks.",
+  "author": { "name": "Josiah" },
+  "license": "MIT",
+  "keywords": ["security", "audit", "secrets", "appsec"]
+}
