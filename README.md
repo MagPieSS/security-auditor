@@ -23,11 +23,11 @@ is sorted by severity and ends with the top 3 to fix first.
 ## Install
 
 ```
-/plugin marketplace add OWNER/security-auditor
+/plugin marketplace add MagPieSS/security-auditor
 /plugin install security-auditor@security-auditor
 ```
 
-Or from a shell: `claude plugin install security-auditor --marketplace OWNER/security-auditor`
+Or from a shell: `claude plugin install security-auditor --marketplace MagPieSS/security-auditor`
 
 The agent then appears as `security-auditor:security-auditor`.
 
