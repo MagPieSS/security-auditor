@@ -1,11 +1,13 @@
 {
   "name": "security-auditor",
-  "owner": { "name": "Josiah" },
+  "owner": {
+    "name": "Josiah"
+  },
   "plugins": [
     {
       "name": "security-auditor",
       "source": ".",
-      "description": "Read-only security audit agent for apps and sites you own."
+      "description": "Security audit agent plus a fixer that turns findings into a reviewed pull request."
     }
   ]
 }

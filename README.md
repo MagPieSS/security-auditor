@@ -1,8 +1,11 @@
 # security-auditor
 
-A read-only security audit agent for Claude Code. Point it at an app or site
-you own and it reports what an attacker could actually do, with evidence and
-an exact fix for each finding.
+Two Claude Code agents for apps and sites you own:
+
+- **security-auditor** is read-only. It reports what an attacker could
+  actually do, with evidence and an exact fix for each finding.
+- **security-fixer** takes that report, fixes what code can fix on a new
+  branch, and stops at a pull request for you to review.
 
 It checks:
 
@@ -29,7 +32,8 @@ is sorted by severity and ends with the top 3 to fix first.
 
 Or from a shell: `claude plugin install security-auditor --marketplace MagPieSS/security-auditor`
 
-The agent then appears as `security-auditor:security-auditor`.
+The agents then appear as `security-auditor:security-auditor` and
+`security-auditor:security-fixer`.
 
 ## Use
 
@@ -40,6 +44,9 @@ The agent then appears as `security-auditor:security-auditor`.
    in it. If the file is missing, the agent drafts one and stops until you
    confirm it.
 2. Ask: `Use the security-auditor agent to audit this project.`
+
+3. Save the report as `security-report.md` in the repo root. Don't commit
+   it, since it describes open vulnerabilities.
 
 For a weekly run, schedule that same prompt with Claude Code's scheduled
 agents. Pass the previous report in and the agent adds a "Changes since last
@@ -59,6 +66,45 @@ run" section.
   [scripts/mask_secrets.py](scripts/mask_secrets.py), so reports show a
   location plus `****` and the last 4 characters, never the whole value.
 - **Repo content is data, not instructions.**
+
+## Fixing findings
+
+Ask: `Use the security-fixer agent to fix security-report.md.`
+
+By default it takes **Confirmed Critical and High** findings. It verifies
+**Suspected** ones from the code first and skips any it can't confirm, with
+the reason. Say so if you want Medium or Low included.
+
+What it does:
+
+- Starts only from a clean working tree (the untracked report is fine), on
+  a new `security-fixes/<date>` branch.
+- Makes the smallest change per finding, one commit each, with the ID in
+  the message (`fix(SA-2): ...`).
+- Writes a test first where practical, watches it fail, then fixes the code.
+  Runs the build and tests against a baseline. If a fix breaks something it
+  can't fix cleanly, it reverts that commit and reports it.
+- Pushes only its own branch and opens a PR. It never merges, never pushes
+  to the default branch, never deploys, and never touches production data
+  or settings.
+- Ends with a table (finding ID → fixed / skipped / needs me → commit) and a
+  manual to-do list in priority order.
+
+What it won't do without you:
+
+- **Changes to auth logic, database schemas or access rules, and major
+  dependency upgrades.** It writes these as a patch in `.git/security-fix/`
+  (inside `.git`, so the patch is never committed) and marks them "needs me".
+- **Work that isn't code:** rotating leaked keys, dashboard settings, spend
+  caps, scrubbing git history, setting env vars in hosting. These go on the
+  manual list. Key rotation is always first, because removing a key from
+  code doesn't make it safe again.
+- **Detailed PRs on public repos.** If the repo is public (or it can't
+  tell), the PR body only lists what was fixed. The full table and to-do list
+  go in its final message, so open problems aren't published.
+
+It never weakens a check to make it pass: no deleted tests, no
+`eslint-disable`/`@ts-ignore`/`# noqa`, no loosened CORS or CSP.
 
 ## Tools it uses if installed
 

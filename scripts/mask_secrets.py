@@ -33,6 +33,9 @@ NAMED = re.compile(
     re.IGNORECASE,
 )
 
+# Code that reads a value from the environment instead of holding one.
+ENV_READ = re.compile(r"(os\.environ|os\.getenv|process\.env|import\.meta\.env|Deno\.env|getenv\(|env\()")
+
 # Any long run of key-like characters. Only masked if it mixes letters
 # and digits (see hide_token), which real keys do and plain words don't.
 TOKEN = re.compile(r"[A-Za-z0-9_\-+/=]{20,}")
@@ -57,9 +60,19 @@ def hide_token(match):
     return hide(s)
 
 
+def hide_named(match):
+    value = match.group(2)
+    # "API_KEY = os.environ.get(" is the fix, not a leak. Hiding it
+    # makes every fix diff unreadable. Matched by an exact list so a
+    # real password can't slip through by looking like code.
+    if ENV_READ.match(value):
+        return match.group(0)
+    return match.group(1) + hide(value)
+
+
 def mask(text):
     text = URL_CREDENTIALS.sub(lambda m: m.group(1) + hide(m.group(2)) + m.group(3), text)
-    text = NAMED.sub(lambda m: m.group(1) + hide(m.group(2)), text)
+    text = NAMED.sub(hide_named, text)
     return TOKEN.sub(hide_token, text)
 
 

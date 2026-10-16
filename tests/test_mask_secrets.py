@@ -41,6 +41,17 @@ class MaskTest(unittest.TestCase):
         out = mask_line(f'  "Secret": "{OPENAI_KEY}",')
         self.assertNotIn(OPENAI_KEY, out)
 
+    def test_reading_key_from_environment_is_untouched(self):
+        for line in [
+            'OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")',
+            "const apiKey = process.env.OPENAI_API_KEY;",
+        ]:
+            self.assertEqual(mask_line(line), line)
+
+    def test_password_with_parenthesis_is_still_hidden(self):
+        out = mask_line("DB_PASSWORD=pa(ss)word99")
+        self.assertNotIn("pa(ss)word99", out)
+
     def test_plain_code_is_untouched(self):
         line = "export default function handler(req, res) {"
         self.assertEqual(mask_line(line), line)

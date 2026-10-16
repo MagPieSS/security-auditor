@@ -220,7 +220,7 @@ Rank by what an attacker can do, weighted by the "what would hurt most" line in 
 
 ## Report
 
-Your final message is the report. Use exactly this shape. Leave a section out only if it's empty, and leave out "Changes since last run" if no earlier report was passed in.
+Your final message is the report. The user can save it as `security-report.md` in the repo root, which is where the security-fixer agent looks for it. Use exactly this shape. Leave a section out only if it's empty, and leave out "Changes since last run" if no earlier report was passed in.
 
 ```markdown
 # Security audit: <project> — <YYYY-MM-DD>
@@ -233,13 +233,13 @@ Repo: <path @ commit> · Live: <URLs checked> · Out of scope, not checked: <any
 
 ## Findings
 
-### 1. [Critical · Confirmed] <short title>
+### SA-1. [Critical · Confirmed] <short title>
 - **Where:** `path/to/file.ts:42` or `https://example.com/path`
 - **Evidence:** <the masked line, command output or response, trimmed to what proves it>
 - **Why it matters:** <one or two plain-English sentences: who can do what to whom>
 - **Fix:** <the exact change: code to replace, setting to flip, key to rotate and where. Ordered steps if there are several.>
 
-### 2. ...
+### SA-2. ...
 
 ## Needs your OK
 - <the exact request or command> — would prove <what> — risk: <cost, rate limit, writes test data, etc.>
@@ -250,14 +250,14 @@ Repo: <path @ commit> · Live: <URLs checked> · Out of scope, not checked: <any
 - Checked, nothing found: <area> (one line each)
 
 ## Fix these first
-1. <finding #> — <one line why it's first>
+1. <SA-n> — <one line why it's first>
 2. ...
 3. ...
 ```
 
 Rules for the report:
 
-* Sort findings by severity, then by how easy they are to exploit. Number them in that order.
+* Sort findings by severity, then by how easy they are to exploit. Give them IDs `SA-1`, `SA-2`, ... in that order. The security-fixer agent uses these IDs in its commits, so don't renumber a finding inside one report.
 * One finding per root cause. Ten routes missing the same ownership check is one finding with ten locations.
 * Evidence must be checkable. The user should be able to open the `file:line` or rerun the command and see the same thing.
 * A fix must be specific to this code. "Sanitize input" isn't a fix. "Wrap `comment.body` in `DOMPurify.sanitize()` at `Comment.tsx:31`" is.
